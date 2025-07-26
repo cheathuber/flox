@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Site Creation Stepper</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 480px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+  h1 {
+    text-align: center;
+  }
+  .stepper {
+    margin-top: 1rem;
+  }
+  .steps-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .step-indicator {
+    flex-grow: 1;
+    padding: 0.5rem;
+    text-align: center;
+    background: #eee;
+    border-radius: 4px;
+    margin: 0 4px;
+    user-select: none;
+    cursor: default;
+  }
+  .step-indicator.active {
+    background: #3498db;
+    color: white;
+    font-weight: bold;
+  }
+  form > div {
+    display: none;
+  }
+  form > div.active {
+    display: block;
+  }
+  label {
+    display: block;
+    margin: 1rem 0 0.25rem;
+  }
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  textarea {
+    resize: vertical;
+  }
+  .buttons {
+    margin-top: 1.5rem;
+    text-align: right;
+  }
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.3rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 0.5rem;
+  }
+  button:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+  }
+  .error {
+    color: red;
+    font-size: 0.875rem;
+  }
+  /* Responsive */
+  @media(max-width: 500px) {
+    body {
+      margin: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>Create your site</h1>
+  <div class="stepper" role="form" aria-label="Site creation process">
+
+    <div class="steps-indicator" aria-live="polite" aria-atomic="true">
+      <div class="step-indicator active" id="step-1-indicator" aria-current="step">About</div>
+      <div class="step-indicator" id="step-2-indicator">Style</div>
+      <div class="step-indicator" id="step-3-indicator">Initial Content</div>
+      <div class="step-indicator" id="step-4-indicator">Launch</div>
+    </div>
+
+    <form id="stepper-form" novalidate>
+      <!-- Step 1: About -->
+      <div id="step-1" class="active" aria-labelledby="step-1-indicator">
+        <label for="site-name">Site Name <span aria-hidden="true" style="color:red">*</span></label>
+        <input type="text" id="site-name" name="siteName" autocomplete="off" required />
+        <div id="site-name-error" class="error" aria-live="polite"></div>
+
+        <label for="site-description">Description (optional)</label>
+        <textarea id="site-description" name="description" rows="3"></textarea>
+      </div>
+
+      <!-- Step 2: Style -->
+      <div id="step-2" aria-labelledby="step-2-indicator">
+        <label for="style-select">Select a style/theme</label>
+        <select id="style-select" name="style">
+          <option value="default" selected>Default</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="colorful">Colorful</option>
+        </select>
+      </div>
+
+      <!-- Step 3: Initial Content -->
+      <div id="step-3" aria-labelledby="step-3-indicator">
+        <label>Initial Content</label>
+        <div>
+          <input type="checkbox" id="content-blog" name="initialContent" value="blog" />
+          <label for="content-blog">Include Blog</label>
+        </div>
+        <div>
+          <input type="checkbox" id="content-contact" name="initialContent" value="contact" />
+          <label for="content-contact">Contact Form</label>
+        </div>
+        <div>
+          <input type="checkbox" id="content-portfolio" name="initialContent" value="portfolio" />
+          <label for="content-portfolio">Portfolio</label>
+        </div>
+      </div>
+
+      <!-- Step 4: Launch -->
+      <div id="step-4" aria-labelledby="step-4-indicator">
+        <h2>Ready to launch</h2>
+        <p>Please review your details and click "Create Site" to proceed.</p>
+        <pre id="summary" style="background:#f4f4f4; padding:1rem; white-space:pre-wrap;"></pre>
+      </div>
+
+      <div class="buttons">
+        <button type="button" id="prev-btn" disabled>Previous</button>
+        <button type="button" id="next-btn">Next</button>
+      </div>
+    </form>
+  </div>
+
+<script>
+  (function() {
+    const steps = 4;
+    let currentStep = 1;
+
+    const form = document.getElementById('stepper-form');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    // Step elements
+    function getStepEl(step) {
+      return document.getElementById(`step-${step}`);
+    }
+    function getStepIndicator(step) {
+      return document.getElementById(`step-${step}-indicator`);
+    }
+
+    // Validation for Step 1 — just Site Name required & no spaces or special chars
+    function validateStep1() {
+      const siteNameInput = document.getElementById('site-name');
+      const errDiv = document.getElementById('site-name-error');
+      const val = siteNameInput.value.trim();
+
+      if (!val) {
+        errDiv.textContent = 'Site Name is required.';
+        return false;
+      }
+
+      // Basic site name validation: letters, numbers, dash, no spaces
+      const valid = /^[a-zA-Z0-9-]+$/.test(val);
+      if (!valid) {
+        errDiv.textContent = 'Site Name must contain only letters, numbers, or dashes.';
+        return false;
+      }
+
+      errDiv.textContent = '';
+      return true;
+    }
+
+    // Collect all form values into an object
+    function collectFormData() {
+      const siteName = form.siteName.value.trim();
+      const description = form.description.value.trim();
+      const style = form.style.value;
+      const initialContent = Array.from(form.querySelectorAll('input[name="initialContent"]:checked')).map(i => i.value);
+
+      return { siteName, description, style, initialContent };
+    }
+
+    // Update UI to show current step, hide others
+    function showStep(step) {
+      for (let i = 1; i <= steps; i++) {
+        const el = getStepEl(i);
+        const ind = getStepIndicator(i);
+
+        if (i === step) {
+          el.classList.add('active');
+          ind.classList.add('active');
+          ind.setAttribute('aria-current', 'step');
+        } else {
+          el.classList.remove('active');
+          ind.classList.remove('active');
+          ind.removeAttribute('aria-current');
+        }
+      }
+
+      prevBtn.disabled = step === 1;
+
+      // Change button text on last step
+      nextBtn.textContent = step === steps ? 'Create Site' : 'Next';
+
+      // On last step, update summary display
+      if (step === steps) {
+        const summaryEl = document.getElementById('summary');
+        const data = collectFormData();
+        summaryEl.textContent = `
+Site Name: ${data.siteName}
+Description: ${data.description || '(none)'}
+Style: ${data.style}
+Initial Content: ${data.initialContent.length ? data.initialContent.join(', ') : '(none)'}
+        `.trim();
+      }
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      // Validate step 1 before moving forward
+      if (currentStep === 1 && !validateStep1()) {
+        return;
+      }
+
+      if (currentStep < steps) {
+        currentStep++;
+        showStep(currentStep);
+      } else {
+        // Final submission action
+        const data = collectFormData();
+        alert('Creating site:\n\n' + JSON.stringify(data, null, 2));
+        // TODO: Hook here to send data to backend, reset UI, show success etc.
+      }
+    });
+
+    // Optionally, live validate Site Name as user types
+    document.getElementById('site-name').addEventListener('input', () => {
+      if (currentStep === 1) validateStep1();
+    });
+
+    // Initialize
+    showStep(currentStep);
+  })();
+</script>
+</body>
+</html>
