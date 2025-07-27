@@ -1,0 +1,42 @@
+# brutalist-theme.yaml - Tier 3 user-modifiable tokens
+
+colors:
+  primary: "#000000"                 # solid black
+  secondary: "#FFFFFF"               # solid white
+  background: "#FFFFFF"              # plain white background
+  surface: "#FFFFFF"
+  text_primary: "#000000"            # black text
+  text_muted: "#444444"              # dark gray for muted text
+  border_color: "#000000"            # black solid borders
+  error: "#FF0000"                   # bright red error for emphasis
+  hover_background: "#DDDDDD"        # very light gray hover effect
+
+typography:
+  font_family: "'Courier New', monospace"  # Brutalist monospaced font for raw feel
+  base_font_size: "16px"
+  heading_weight: 700
+  body_weight: 400
+  line_height: 1.4
+  letter_spacing: "0.03em"
+
+borders:
+  border_radius: "0px"               # sharp corners, no rounding
+  border_width: "2px"
+  border_style: "solid"
+
+elevation:
+  shadow_depth: "none"               # no shadows, flat elements
+
+spacing:
+  base_spacing_unit: "8px"
+
+buttons:
+  shape_variant: "square"
+  hover_animation: "none"
+
+icons:
+  icon_set: "none"                   # minimal icons or none for starkness
+  
+backgrounds:
+  background_image: "none"
+

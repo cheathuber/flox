@@ -1,0 +1,43 @@
+# elegant-theme.yaml - Tier 3 user-modifiable tokens
+
+colors:
+  primary: "#6B7C93"                # muted blue-gray
+  secondary: "#A3B4C3"              # soft light blue
+  background: "#FDFDFD"             # very light off-white
+  surface: "#FFFFFF"                
+  text_primary: "#333333"           # dark gray text, less harsh than black
+  text_muted: "#666666"             # medium gray for subtlety
+  border_color: "#D8DDE6"           # light blue-gray borders
+  error: "#C94C4C"                  # softened brick red errors
+  hover_background: "#E6EDF4"       # gentle pale blue hover bg
+
+typography:
+  font_family: "'Georgia', serif"   # elegant serif font for warmth
+  base_font_size: "16px"
+  heading_weight: 600
+  body_weight: 400
+  line_height: 1.6
+  letter_spacing: "0.02em"
+
+borders:
+  border_radius: "8px"              # soft rounded corners
+  border_width: "1px"
+  border_style: "solid"
+
+elevation:
+  shadow_depth: "0 2px 8px rgba(0, 0, 0, 0.1)"   # subtle shadows for depth
+
+spacing:
+  base_spacing_unit: "12px"
+
+buttons:
+  shape_variant: "rounded"
+  hover_animation: "fade"
+
+icons:
+  icon_set: "elegant-line-icons"
+  icon_size: "24px"
+
+backgrounds:
+  background_image: "none"
+
