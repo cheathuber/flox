@@ -1,274 +1,960 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Site Creation Stepper</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 480px;
-    margin: 2rem auto;
-    padding: 1rem;
-  }
-  h1 {
-    text-align: center;
-  }
-  .stepper {
-    margin-top: 1rem;
-  }
-  .steps-indicator {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-  .step-indicator {
-    flex-grow: 1;
-    padding: 0.5rem;
-    text-align: center;
-    background: #eee;
-    border-radius: 4px;
-    margin: 0 4px;
-    user-select: none;
-    cursor: default;
-  }
-  .step-indicator.active {
-    background: #3498db;
-    color: white;
-    font-weight: bold;
-  }
-  form > div {
-    display: none;
-  }
-  form > div.active {
-    display: block;
-  }
-  label {
-    display: block;
-    margin: 1rem 0 0.25rem;
-  }
-  input[type="text"],
-  textarea,
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    font-size: 1rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-  textarea {
-    resize: vertical;
-  }
-  .buttons {
-    margin-top: 1.5rem;
-    text-align: right;
-  }
-  button {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 0.7rem 1.3rem;
-    font-size: 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-left: 0.5rem;
-  }
-  button:disabled {
-    background: #bbb;
-    cursor: not-allowed;
-  }
-  .error {
-    color: red;
-    font-size: 0.875rem;
-  }
-  /* Responsive */
-  @media(max-width: 500px) {
-    body {
-      margin: 1rem;
-    }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flox Site Builder</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.5;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+        
+        header {
+            background-color: white;
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        header h1 {
+            color: var(--primary);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        header p {
+            color: var(--gray-500);
+            font-size: 16px;
+        }
+        
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            padding: 24px 40px;
+            background-color: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .step {
+            text-align: center;
+            position: relative;
+            flex: 1;
+        }
+        
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background-color: var(--gray-300);
+            z-index: 1;
+        }
+        
+        .step.active:not(:last-child)::after {
+            background-color: var(--primary);
+        }
+        
+        .step.completed:not(:last-child)::after {
+            background-color: var(--success);
+        }
+        
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--gray-200);
+            color: var(--gray-700);
+            font-weight: 600;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 8px;
+        }
+        
+        .step.active .step-number {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 14px;
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .step-content {
+            padding: 32px;
+            min-height: 400px;
+        }
+        
+        .step-panel {
+            display: none;
+        }
+        
+        .step-panel.active {
+            display: block;
+        }
+        
+        .step-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--gray-800);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .validation-status {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .validation-status .icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .valid {
+            color: var(--success);
+        }
+        
+        .invalid {
+            color: var(--error);
+        }
+        
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .theme-card {
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .theme-card:hover {
+            border-color: var(--gray-300);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .theme-card.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        
+        .theme-preview {
+            height: 120px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .theme-name {
+            font-weight: 600;
+            text-align: center;
+            color: var(--gray-700);
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .content-card {
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: white;
+        }
+        
+        .content-card:hover {
+            border-color: var(--gray-300);
+            transform: translateY(-2px);
+        }
+        
+        .content-card.active {
+            border-color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+        
+        .content-card.required {
+            border-left: 4px solid var(--primary);
+        }
+        
+        .content-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .content-checkbox {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-300);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .content-card.active .content-checkbox {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .content-card.active .content-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .content-title {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        
+        .content-description {
+            font-size: 14px;
+            color: var(--gray-600);
+            padding-left: 32px;
+        }
+        
+        .required-tag {
+            display: inline-block;
+            background-color: var(--primary-light);
+            color: white;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+        
+        .review-card {
+            background-color: var(--gray-50);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .review-row {
+            display: flex;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .review-label {
+            width: 150px;
+            font-weight: 500;
+            color: var(--gray-600);
+        }
+        
+        .review-value {
+            flex: 1;
+        }
+        
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tag {
+            background-color: var(--primary-light);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .launch-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background-color: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            font-size: 40px;
+        }
+        
+        .site-url {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 24px 0;
+            word-break: break-all;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--gray-50);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .next-steps {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            padding: 24px;
+            margin-top: 24px;
+        }
+        
+        .step-item {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .step-number-circle {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-light);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+            margin-right: 16px;
+        }
+        
+        .step-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--gray-800);
+        }
+        
+        .step-info p {
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+        
+        @media (max-width: 600px) {
+            .stepper {
+                padding: 16px 10px;
+            }
+            
+            .step-label {
+                font-size: 12px;
+            }
+            
+            .step-content {
+                padding: 20px;
+            }
+            
+            .theme-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Create your site</h1>
-  <div class="stepper" role="form" aria-label="Site creation process">
-
-    <div class="steps-indicator" aria-live="polite" aria-atomic="true">
-      <div class="step-indicator active" id="step-1-indicator" aria-current="step">About</div>
-      <div class="step-indicator" id="step-2-indicator">Style</div>
-      <div class="step-indicator" id="step-3-indicator">Initial Content</div>
-      <div class="step-indicator" id="step-4-indicator">Launch</div>
+    <div class="container">
+        <header>
+            <h1>Flox Site Builder</h1>
+            <p>Create your website in 5 easy steps</p>
+        </header>
+        
+        <div class="stepper">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">About</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Style</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Content</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Review</div>
+            </div>
+            <div class="step" data-step="5">
+                <div class="step-number">5</div>
+                <div class="step-label">Launch</div>
+            </div>
+        </div>
+        
+        <div class="step-content">
+            <!-- Step 1: About -->
+            <div class="step-panel active" id="step-1">
+                <h2 class="step-title">About Your Site</h2>
+                
+                <div class="form-group">
+                    <label for="site-name">Site Name *</label>
+                    <input type="text" id="site-name" placeholder="my-awesome-site">
+                    <div class="validation-status">
+                        <span class="icon">⏱</span>
+                        <span class="message">Your site will be available at: <span id="site-url-preview">name</span>.flox.click</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="site-description">Description (Optional)</label>
+                    <textarea id="site-description" placeholder="Describe your website..."></textarea>
+                </div>
+                
+                <div class="action-buttons">
+                    <div></div> <!-- Empty div for spacing -->
+                    <button class="btn btn-primary" id="next-to-style">Next: Style</button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Style -->
+            <div class="step-panel" id="step-2">
+                <h2 class="step-title">Choose a Style</h2>
+                <p>Select a theme for your website</p>
+                
+                <div class="theme-grid">
+                    <div class="theme-card active" data-theme="light">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #f3f4f6 0%, #f3f4f6 25%, #4f46e5 25%, #4f46e5 100%);"></div>
+                        <div class="theme-name">Light Theme</div>
+                    </div>
+                    <div class="theme-card" data-theme="dark">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #1f2937 0%, #1f2937 25%, #8b5cf6 25%, #8b5cf6 100%);"></div>
+                        <div class="theme-name">Dark Theme</div>
+                    </div>
+                    <div class="theme-card" data-theme="material">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #f5f5f5 0%, #f5f5f5 25%, #3f51b5 25%, #3f51b5 100%);"></div>
+                        <div class="theme-name">Material Design</div>
+                    </div>
+                    <div class="theme-card" data-theme="minimal">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #ffffff 0%, #ffffff 25%, #000000 25%, #000000 100%);"></div>
+                        <div class="theme-name">Minimalist</div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="back-to-about">Back</button>
+                    <button class="btn btn-primary" id="next-to-content">Next: Content</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Content -->
+            <div class="step-panel" id="step-3">
+                <h2 class="step-title">Select Content Sections</h2>
+                <p>Choose which sections to include on your site</p>
+                
+                <div class="content-grid">
+                    <div class="content-card required active" data-content="header">
+                        <div class="content-header">
+                            <div class="content-checkbox"></div>
+                            <div class="content-title">Header <span class="required-tag">Required</span></div>
+                        </div>
+                        <div class="content-description">Navigation bar with logo and menu</div>
+                    </div>
+                    <div class="content-card" data-content="hero">
+                        <div class="content-header">
+                            <div class="content-checkbox"></div>
+                            <div class="content-title">Hero Section</div>
+                        </div>
+                        <div class="content-description">Full-width banner with headline</div>
+                    </div>
+                    <div class="content-card" data-content="features">
+                        <div class="content-header">
+                            <div class="content-checkbox"></div>
+                            <div class="content-title">Features</div>
+                        </div>
+                        <div class="content-description">Showcase key features or services</div>
+                    </div>
+                    <div class="content-card required active" data-content="footer">
+                        <div class="content-header">
+                            <div class="content-checkbox"></div>
+                            <div class="content-title">Footer <span class="required-tag">Required</span></div>
+                        </div>
+                        <div class="content-description">Impressum, privacy policy, and links</div>
+                    </div>
+                    <div class="content-card" data-content="testimonials">
+                        <div class="content-header">
+                            <div class="content-checkbox"></div>
+                            <div class="content-title">Testimonials</div>
+                        </div>
+                        <div class="content-description">Customer reviews and quotes</div>
+                    </div>
+                    <div class="content-card" data-content="contact">
+                        <div class="content-header">
+                            <div class="content-checkbox"></div>
+                            <div class="content-title">Contact Form</div>
+                        </div>
+                        <div class="content-description">Form for visitors to contact you</div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="back-to-style">Back</button>
+                    <button class="btn btn-primary" id="next-to-review">Next: Review</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Review -->
+            <div class="step-panel" id="step-4">
+                <h2 class="step-title">Review Your Site</h2>
+                
+                <div class="review-card">
+                    <div class="review-row">
+                        <div class="review-label">Site Name</div>
+                        <div class="review-value" id="review-site-name">my-awesome-site.flox.click</div>
+                    </div>
+                    <div class="review-row">
+                        <div class="review-label">Description</div>
+                        <div class="review-value" id="review-description">No description provided</div>
+                    </div>
+                    <div class="review-row">
+                        <div class="review-label">Theme</div>
+                        <div class="review-value" id="review-theme">Light Theme</div>
+                    </div>
+                    <div class="review-row">
+                        <div class="review-label">Content Sections</div>
+                        <div class="review-value">
+                            <div class="tag-list" id="review-content">
+                                <span class="tag">Header</span>
+                                <span class="tag">Footer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; border-left: 4px solid var(--success);">
+                    <p style="display: flex; align-items: center;">
+                        <span style="margin-right: 10px; color: var(--success); font-size: 20px;">✓</span>
+                        Your site will be published at <strong id="review-site-url">my-awesome-site.flox.click</strong>.
+                        You can connect a custom domain anytime after launch.
+                    </p>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="back-to-content">Back</button>
+                    <button class="btn btn-success" id="create-site">Create Site</button>
+                </div>
+            </div>
+            
+            <!-- Step 5: Launch -->
+            <div class="step-panel" id="step-5">
+                <div class="launch-container">
+                    <div class="success-icon">✓</div>
+                    <h2 class="step-title">Your Site is Ready!</h2>
+                    <p>Congratulations! Your website has been successfully created.</p>
+                    
+                    <div class="site-url" id="final-site-url">https://my-awesome-site.flox.click</div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="create-another">Create Another Site</button>
+                        <button class="btn btn-primary" id="visit-site">Visit Your Site</button>
+                    </div>
+                    
+                    <div class="next-steps">
+                        <h3 style="margin-bottom: 20px; text-align: center; font-size: 18px;">Next Steps</h3>
+                        
+                        <div class="step-item">
+                            <div class="step-number-circle">1</div>
+                            <div class="step-info">
+                                <h3>Visit your site</h3>
+                                <p>Explore your new website and make sure everything looks right</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number-circle">2</div>
+                            <div class="step-info">
+                                <h3>Customize content</h3>
+                                <p>Use the admin dashboard to add your content and images</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number-circle">3</div>
+                            <div class="step-info">
+                                <h3>Connect a domain</h3>
+                                <p>Use your own domain name (available in site settings)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <form id="stepper-form" novalidate>
-      <!-- Step 1: About -->
-      <div id="step-1" class="active" aria-labelledby="step-1-indicator">
-        <label for="site-name">Site Name <span aria-hidden="true" style="color:red">*</span></label>
-        <input type="text" id="site-name" name="siteName" autocomplete="off" required />
-        <div id="site-name-error" class="error" aria-live="polite"></div>
-
-        <label for="site-description">Description (optional)</label>
-        <textarea id="site-description" name="description" rows="3"></textarea>
-      </div>
-
-      <!-- Step 2: Style -->
-      <div id="step-2" aria-labelledby="step-2-indicator">
-        <label for="style-select">Select a style/theme</label>
-        <select id="style-select" name="style">
-          <option value="default" selected>Default</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="colorful">Colorful</option>
-        </select>
-      </div>
-
-      <!-- Step 3: Initial Content -->
-      <div id="step-3" aria-labelledby="step-3-indicator">
-        <label>Initial Content</label>
-        <div>
-          <input type="checkbox" id="content-blog" name="initialContent" value="blog" />
-          <label for="content-blog">Include Blog</label>
-        </div>
-        <div>
-          <input type="checkbox" id="content-contact" name="initialContent" value="contact" />
-          <label for="content-contact">Contact Form</label>
-        </div>
-        <div>
-          <input type="checkbox" id="content-portfolio" name="initialContent" value="portfolio" />
-          <label for="content-portfolio">Portfolio</label>
-        </div>
-      </div>
-
-      <!-- Step 4: Launch -->
-      <div id="step-4" aria-labelledby="step-4-indicator">
-        <h2>Ready to launch</h2>
-        <p>Please review your details and click "Create Site" to proceed.</p>
-        <pre id="summary" style="background:#f4f4f4; padding:1rem; white-space:pre-wrap;"></pre>
-      </div>
-
-      <div class="buttons">
-        <button type="button" id="prev-btn" disabled>Previous</button>
-        <button type="button" id="next-btn">Next</button>
-      </div>
-    </form>
-  </div>
-
-<script>
-  (function() {
-    const steps = 4;
-    let currentStep = 1;
-
-    const form = document.getElementById('stepper-form');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-
-    // Step elements
-    function getStepEl(step) {
-      return document.getElementById(`step-${step}`);
-    }
-    function getStepIndicator(step) {
-      return document.getElementById(`step-${step}-indicator`);
-    }
-
-    // Validation for Step 1 — just Site Name required & no spaces or special chars
-    function validateStep1() {
-      const siteNameInput = document.getElementById('site-name');
-      const errDiv = document.getElementById('site-name-error');
-      const val = siteNameInput.value.trim();
-
-      if (!val) {
-        errDiv.textContent = 'Site Name is required.';
-        return false;
-      }
-
-      // Basic site name validation: letters, numbers, dash, no spaces
-      const valid = /^[a-zA-Z0-9-]+$/.test(val);
-      if (!valid) {
-        errDiv.textContent = 'Site Name must contain only letters, numbers, or dashes.';
-        return false;
-      }
-
-      errDiv.textContent = '';
-      return true;
-    }
-
-    // Collect all form values into an object
-    function collectFormData() {
-      const siteName = form.siteName.value.trim();
-      const description = form.description.value.trim();
-      const style = form.style.value;
-      const initialContent = Array.from(form.querySelectorAll('input[name="initialContent"]:checked')).map(i => i.value);
-
-      return { siteName, description, style, initialContent };
-    }
-
-    // Update UI to show current step, hide others
-    function showStep(step) {
-      for (let i = 1; i <= steps; i++) {
-        const el = getStepEl(i);
-        const ind = getStepIndicator(i);
-
-        if (i === step) {
-          el.classList.add('active');
-          ind.classList.add('active');
-          ind.setAttribute('aria-current', 'step');
-        } else {
-          el.classList.remove('active');
-          ind.classList.remove('active');
-          ind.removeAttribute('aria-current');
+    <script>
+        // Application state
+        const state = {
+            currentStep: 1,
+            siteName: '',
+            description: '',
+            style: 'light',
+            initialContent: ['header', 'footer'],
+            siteUrl: ''
+        };
+        
+        // DOM Elements
+        const stepPanels = document.querySelectorAll('.step-panel');
+        const stepIndicators = document.querySelectorAll('.step');
+        const siteNameInput = document.getElementById('site-name');
+        const siteUrlPreview = document.getElementById('site-url-preview');
+        const descriptionInput = document.getElementById('site-description');
+        
+        // Navigation buttons
+        const nextToStyleBtn = document.getElementById('next-to-style');
+        const backToAboutBtn = document.getElementById('back-to-about');
+        const nextToContentBtn = document.getElementById('next-to-content');
+        const backToStyleBtn = document.getElementById('back-to-style');
+        const nextToReviewBtn = document.getElementById('next-to-review');
+        const backToContentBtn = document.getElementById('back-to-content');
+        const createSiteBtn = document.getElementById('create-site');
+        const createAnotherBtn = document.getElementById('create-another');
+        const visitSiteBtn = document.getElementById('visit-site');
+        
+        // Review elements
+        const reviewSiteName = document.getElementById('review-site-name');
+        const reviewDescription = document.getElementById('review-description');
+        const reviewTheme = document.getElementById('review-theme');
+        const reviewContent = document.getElementById('review-content');
+        const reviewSiteUrl = document.getElementById('review-site-url');
+        const finalSiteUrl = document.getElementById('final-site-url');
+        
+        // Initialize the application
+        function init() {
+            // Event listeners for navigation
+            nextToStyleBtn.addEventListener('click', () => navigateToStep(2));
+            backToAboutBtn.addEventListener('click', () => navigateToStep(1));
+            nextToContentBtn.addEventListener('click', () => navigateToStep(3));
+            backToStyleBtn.addEventListener('click', () => navigateToStep(2));
+            nextToReviewBtn.addEventListener('click', () => navigateToStep(4));
+            backToContentBtn.addEventListener('click', () => navigateToStep(3));
+            createSiteBtn.addEventListener('click', createSite);
+            createAnotherBtn.addEventListener('click', resetWizard);
+            visitSiteBtn.addEventListener('click', visitSite);
+            
+            // Theme selection
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    state.style = card.dataset.theme;
+                });
+            });
+            
+            // Content selection
+            document.querySelectorAll('.content-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const contentId = card.dataset.content;
+                    const isRequired = card.classList.contains('required');
+                    
+                    if (!isRequired) {
+                        card.classList.toggle('active');
+                        
+                        if (card.classList.contains('active')) {
+                            if (!state.initialContent.includes(contentId)) {
+                                state.initialContent.push(contentId);
+                            }
+                        } else {
+                            state.initialContent = state.initialContent.filter(id => id !== contentId);
+                        }
+                    }
+                });
+            });
+            
+            // Site name input handling
+            siteNameInput.addEventListener('input', () => {
+                state.siteName = siteNameInput.value;
+                siteUrlPreview.textContent = state.siteName || 'name';
+            });
+            
+            // Description input handling
+            descriptionInput.addEventListener('input', () => {
+                state.description = descriptionInput.value;
+            });
         }
-      }
-
-      prevBtn.disabled = step === 1;
-
-      // Change button text on last step
-      nextBtn.textContent = step === steps ? 'Create Site' : 'Next';
-
-      // On last step, update summary display
-      if (step === steps) {
-        const summaryEl = document.getElementById('summary');
-        const data = collectFormData();
-        summaryEl.textContent = `
-Site Name: ${data.siteName}
-Description: ${data.description || '(none)'}
-Style: ${data.style}
-Initial Content: ${data.initialContent.length ? data.initialContent.join(', ') : '(none)'}
-        `.trim();
-      }
-    }
-
-    prevBtn.addEventListener('click', () => {
-      if (currentStep > 1) {
-        currentStep--;
-        showStep(currentStep);
-      }
-    });
-
-    nextBtn.addEventListener('click', () => {
-      // Validate step 1 before moving forward
-      if (currentStep === 1 && !validateStep1()) {
-        return;
-      }
-
-      if (currentStep < steps) {
-        currentStep++;
-        showStep(currentStep);
-      } else {
-        // Final submission action
-        const data = collectFormData();
-        alert('Creating site:\n\n' + JSON.stringify(data, null, 2));
-        // TODO: Hook here to send data to backend, reset UI, show success etc.
-      }
-    });
-
-    // Optionally, live validate Site Name as user types
-    document.getElementById('site-name').addEventListener('input', () => {
-      if (currentStep === 1) validateStep1();
-    });
-
-    // Initialize
-    showStep(currentStep);
-  })();
-</script>
+        
+        // Navigate to a specific step
+        function navigateToStep(step) {
+            // Update state
+            state.currentStep = step;
+            
+            // Update UI
+            stepPanels.forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            stepIndicators.forEach(indicator => {
+                indicator.classList.remove('active', 'completed');
+                const stepNum = parseInt(indicator.dataset.step);
+                
+                if (stepNum === step) {
+                    indicator.classList.add('active');
+                } else if (stepNum < step) {
+                    indicator.classList.add('completed');
+                }
+            });
+            
+            // Update review panel if we're on step 4
+            if (step === 4) {
+                updateReviewPanel();
+            }
+        }
+        
+        // Update the review panel with current data
+        function updateReviewPanel() {
+            reviewSiteName.textContent = `${state.siteName || 'my-awesome-site'}.flox.click`;
+            reviewDescription.textContent = state.description || 'No description provided';
+            reviewTheme.textContent = document.querySelector('.theme-card.active .theme-name').textContent;
+            reviewSiteUrl.textContent = `${state.siteName || 'my-awesome-site'}.flox.click`;
+            
+            // Clear existing content tags
+            reviewContent.innerHTML = '';
+            
+            // Add new content tags
+            const contentMap = {
+                'header': 'Header',
+                'footer': 'Footer',
+                'hero': 'Hero Section',
+                'features': 'Features',
+                'testimonials': 'Testimonials',
+                'contact': 'Contact Form'
+            };
+            
+            state.initialContent.forEach(contentId => {
+                if (contentMap[contentId]) {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.textContent = contentMap[contentId];
+                    reviewContent.appendChild(tag);
+                }
+            });
+        }
+        
+        // Create the site (simulated)
+        function createSite() {
+            // Show loading state
+            createSiteBtn.innerHTML = '<span class="loading"></span> Creating site...';
+            createSiteBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Generate site URL
+                state.siteUrl = `https://${state.siteName || 'my-awesome-site'}.flox.click`;
+                finalSiteUrl.textContent = state.siteUrl;
+                
+                // Navigate to launch step
+                navigateToStep(5);
+            }, 2000);
+        }
+        
+        // Visit the created site
+        function visitSite() {
+            alert(`Navigating to: ${state.siteUrl}\n\nIn a real implementation, this would open your site in a new tab.`);
+            // In a real implementation: window.open(state.siteUrl, '_blank');
+        }
+        
+        // Reset the wizard
+        function resetWizard() {
+            // Reset state
+            state.currentStep = 1;
+            state.siteName = '';
+            state.description = '';
+            state.style = 'light';
+            state.initialContent = ['header', 'footer'];
+            state.siteUrl = '';
+            
+            // Reset form
+            siteNameInput.value = '';
+            descriptionInput.value = '';
+            siteUrlPreview.textContent = 'name';
+            
+            // Reset theme selection
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.dataset.theme === 'light') {
+                    card.classList.add('active');
+                }
+            });
+            
+            // Reset content selection
+            document.querySelectorAll('.content-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.classList.contains('required')) {
+                    card.classList.add('active');
+                }
+            });
+            
+            // Reset create site button
+            createSiteBtn.innerHTML = 'Create Site';
+            createSiteBtn.disabled = false;
+            
+            // Navigate back to step 1
+            navigateToStep(1);
+        }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
