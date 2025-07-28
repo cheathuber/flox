@@ -299,9 +299,46 @@ func createSiteHandler(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, siteCreationResponse{Success: true, SiteURL: siteURL})
 }
 
+func getSectionsHandler(w http.ResponseWriter, r *http.Request) {
+	sections := []struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		Mandatory   bool   `json:"mandatory"`
+	}{
+		{ID: "header", Name: "Header", Description: "Navigation bar", Mandatory: true},
+		{ID: "footer", Name: "Footer", Description: "Impressum and privacy", Mandatory: true},
+		{ID: "hero", Name: "Hero Section", Description: "Full-width banner", Mandatory: false},
+		{ID: "features", Name: "Features", Description: "Services showcase", Mandatory: false},
+		{ID: "testimonials", Name: "Testimonials", Description: "Customer reviews", Mandatory: false},
+		{ID: "contact", Name: "Contact Form", Description: "Visitor contact", Mandatory: false},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(sections)
+}
+
+func getThemesHandler(w http.ResponseWriter, r *http.Request) {
+	themes := []struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Image string `json:"image,omitempty"`
+	}{
+		{ID: "light", Name: "Light Theme"},
+		{ID: "dark", Name: "Dark Theme"},
+		{ID: "material", Name: "Material Design"},
+		{ID: "minimal", Name: "Minimalist"},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(themes)
+}
+
 func main() {
 	http.HandleFunc("/api/sites/validate-name", validateSiteNameHandler)
 	http.HandleFunc("/api/sites", createSiteHandler)
+	http.HandleFunc("/api/sections", getSectionsHandler)
+	http.HandleFunc("/api/themes", getSectionsHandler)
 
 	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "OK")
