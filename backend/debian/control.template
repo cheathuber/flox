@@ -2,9 +2,9 @@ Package: flox-backend
 Version: @VERSION@
 Priority: optional
 Architecture: amd64
-Maintainer: Andi Hechtbauer <anti@spin.de>
+Maintainer: <cheathuber@pm.me>
 Description: Flox Site Builder Backend
  RESTful API to register sitename and run a CMS install script
 Installed-Size: 31337
-Depends: nginx, mariadb-server, openssl
+Depends: mariadb-client, openssl
 Section: web

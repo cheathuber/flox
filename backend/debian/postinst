@@ -32,19 +32,43 @@ floxsvc ALL=(floxapp) NOPASSWD: /var/vhosts/flox/restart.sh
 EOF
 chmod 0440 /etc/sudoers.d/flox-backend
 
-# Create default config if not exists
-if [ ! -f /etc/flox/backend.conf ]; then
-    cat > /etc/flox/backend.conf <<EOF
-# Flox backend configuration
-listen_address: ":8080"
-db_admin_path: /etc/flox/mysql-admin.cnf
-dns_api_token: ""  # deSEC API token
-dns_domain: "flox.click"
-template_dir: /var/vhosts/flox/environment/templates
-script_dir: /usr/lib/flox/scripts
+# Create default YAML config if not exists
+if [ ! -f /etc/flox/backend.yaml ]; then
+    # Ensure the target directory for templates/scripts exists in the example
+    # Adjust paths as needed for your actual deployment structure
+    mkdir -p /var/vhosts/flox/environment/templates
+    mkdir -p /usr/lib/flox/scripts
+
+    cat > /etc/flox/backend.yaml <<EOF
+# Flox backend configuration (YAML)
+server:
+    # Address to bind to (use 0.0.0.0 for external access in containers)
+    listen_address: "127.0.0.1"
+    port: "8080"
+sites:
+    # Base directory for storing individual site configurations and data
+    base_dir: "/var/lib/flox/sites" # Standard path for variable data
+
+dns:
+    # deSEC API endpoint for RRsets (e.g., "desec.io/api/v1/domains/flox.click/rrsets/")
+    api_rrsets: ""
+    # Authorization header value (e.g., "Bearer YOUR_TOKEN")
+    api_auth: ""
+    # Your main domain
+    domain: "flox.click"
+
+database:
+    # Path to the MySQL admin credentials file
+    admin_path: "/etc/flox/mysql-admin.cnf"
+
+# Paths to templates and scripts used by the backend
+# These paths reflect where the Debian package installs files
+paths:
+    template_dir: "/var/vhosts/flox/environment/templates"
+    script_dir: "/usr/lib/flox/scripts"
 EOF
-    chown root:floxapp /etc/flox/backend.conf
-    chmod 0640 /etc/flox/backend.conf
+    chown root:floxapp /etc/flox/backend.yaml
+    chmod 0640 /etc/flox/backend.yaml
 fi
 
 # Create MySQL admin credentials if not exists
@@ -58,12 +82,24 @@ EOF
     chmod 0640 /etc/flox/mysql-admin.cnf
 fi
 
-# Enable and start service
-systemctl daemon-reload
-systemctl enable flox-backend.service
-systemctl start flox-backend.service
+
+
+# --- Service Management (conditional) ---
+# Check if systemctl is available (e.g., not in a Docker container)
+if command -v systemctl >/dev/null 2>&1; then
+    # Enable and start service
+    systemctl daemon-reload
+    systemctl enable flox-backend.service
+    # Starting might fail if dependencies aren't met, but enable should work
+    systemctl start flox-backend.service || echo "Warning: Could not start flox-backend.service. Please check dependencies and start manually."
+    echo "Flox backend service configured (enabled/started via systemd)."
+else
+    echo "Warning: systemctl not found. Skipping service enable/start. You will need to run the backend manually or via your container's process manager."
+fi
+# --- End Service Management ---
 
 echo "Flox backend installed successfully!"
-echo "1. Configure MySQL admin user:"
+echo "1. Configure MySQL admin user (if using local DB):"
 echo "   mysql -u root -p -e \"CREATE USER IF NOT EXISTS 'floxadmin'@'localhost' IDENTIFIED BY 'password'; GRANT ALL ON *.* TO 'floxadmin'@'localhost';\""
 echo "2. Update /etc/flox/mysql-admin.cnf with the correct credentials"
+echo "3. Review and adjust /etc/flox/backend.yaml as needed."

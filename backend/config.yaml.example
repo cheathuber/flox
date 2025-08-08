@@ -1,0 +1,19 @@
+# Example Flox backend configuration (YAML)
+server:
+  listen_address: "127.0.0.1"
+  port: 8080
+
+sites:
+  base_dir: "./sites" # Default for development
+
+dns:
+  api_rrsets: ""
+  api_auth: ""
+  domain: "flox.click"
+
+database:
+  admin_path: "./mysql-admin.cnf.example"
+
+paths:
+  template_dir: "./templates" # Adjust for dev
+  script_dir: "./scripts"     # Adjust for dev

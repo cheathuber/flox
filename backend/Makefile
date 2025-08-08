@@ -39,7 +39,7 @@ package-prepare: build
 	install -m 755 -D $(BINARY_NAME) $(DEB_DIR)/usr/local/bin/$(BINARY_NAME)
 	install -m 644 -D debian/$(BINARY_NAME).service $(DEB_DIR)/etc/systemd/system/$(BINARY_NAME).service
 	install -m 644 -D debian/$(BINARY_NAME).1 $(DEB_DIR)/usr/share/man/man1/$(BINARY_NAME).1
-	install -m 644 -D $(BINARY_NAME).yaml.example $(DEB_DIR)/etc/flox/backend.conf.example
+	install -m 644 -D config.yaml.example $(DEB_DIR)/etc/flox/backend.example.yaml
 
 	
 	# Install scripts
@@ -54,7 +54,7 @@ package-prepare: build
 	# Set permissions
 	find $(DEB_DIR) -type d -exec chmod 0755 {} \;
 	find $(DEB_DIR)/usr/lib/flox/scripts -type f -exec chmod 0744 {} \;
-	chmod 0640 $(DEB_DIR)/etc/flox/backend.conf.example
+	chmod 0640 $(DEB_DIR)/etc/flox/backend.example.yaml
 
 
 package: package-prepare

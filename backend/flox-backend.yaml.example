@@ -1,8 +1,0 @@
-# Flox backend configuration
-listen_address: ":8080"
-db_admin_path: /etc/flox/mysql-admin.cnf
-dns_api_token: ""  # deSEC API token
-dns_domain: "flox.click"
-template_dir: /var/vhosts/flox/environment/templates
-script_dir: /usr/lib/flox/scripts
-
