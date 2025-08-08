@@ -1,3 +1,8 @@
+# Build output directory
+build/
+
+# Compiled binary
+flox-backend
 
 *.exe
 *.exe~
