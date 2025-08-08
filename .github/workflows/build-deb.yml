@@ -1,0 +1,44 @@
+name: Build Debian Package
+
+# Trigger the workflow on push events for tags matching a pattern
+# TODO: Adjust the pattern (e.g., '[0-9]+.[0-9]+.[0-9]+' for semver)
+on:
+  push:
+    tags:
+      - '*' # Triggers on any tag push
+
+jobs:
+  build-deb-package:
+    runs-on: ubuntu-latest # Use an Ubuntu runner as it has dpkg tools
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # Ensure all history and tags are fetched for git describe
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          # Check go.mod file for the go directive
+          go-version-file: 'backend/go.mod'
+          # go-version: '1.22.5' # Or specify a version directly
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
+
+      - name: Build Debian package
+        run: |
+          cd backend
+          make package
+
+      # Optional: Upload the built .deb file as an artifact
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flox-backend-deb-package
+          path: backend/build/*.deb
+          # if-no-files-found: error # Optional: Make the step fail if no .deb is found
