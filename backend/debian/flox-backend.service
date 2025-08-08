@@ -1,0 +1,24 @@
+[Unit]
+Description=Flox Site Creation Backend
+After=network.target mysql.service
+
+[Service]
+User=floxsvc
+Group=floxapp
+WorkingDirectory=/var/vhosts/flox
+Environment=CONFIG_PATH=/etc/flox/backend.conf
+ExecStart=/usr/local/bin/flox-backend
+Restart=on-failure
+RestartSec=5s
+MemoryLimit=200M
+CPUQuota=50%
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/vhosts/flox /var/log/flox
+
+[Install]
+WantedBy=multi-user.target

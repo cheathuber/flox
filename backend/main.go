@@ -7,15 +7,20 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 )
+
+var Version = "dev"
 
 var siteNameRegex = regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$`)
 
@@ -29,6 +34,7 @@ var siteNameBlacklist = map[string]struct{}{
 }
 
 var sitesBaseDir string
+var port int
 
 func init() {
 	err := godotenv.Load("../.env")
@@ -335,17 +341,79 @@ func getThemesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/api/sites/validate-name", validateSiteNameHandler)
-	http.HandleFunc("/api/sites", createSiteHandler)
-	http.HandleFunc("/api/sections", getSectionsHandler)
-	http.HandleFunc("/api/themes", getSectionsHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/sites/validate-name", validateSiteNameHandler)
+	mux.HandleFunc("/api/sites", createSiteHandler)
+	mux.HandleFunc("/api/sections", getSectionsHandler)
+	mux.HandleFunc("/api/themes", getThemesHandler)
 
-	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "OK")
+	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"version": Version,
+		})
+	})
+	c := cors.New(cors.Options{
+
+		AllowedOrigins: []string{
+			"https://flox.click",
+			"https://www.flox.click",
+			"https://app.flox.click",
+			"http://localhost:3000", // For local development
+			"http://127.0.0.1:3000", // For local development
+		},
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+		Debug:            true, // Enable for troubleshooting
 	})
 
-	fmt.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		panic(err)
+	port := 0
+	// Read port from env var, fallback to 0 (OS picks free port)
+	portStr := os.Getenv("SERVER_PORT")
+	if portStr != "" {
+		if p, err := strconv.Atoi(portStr); err == nil && p > 0 && p <= 65535 {
+			port = p
+		} else {
+			log.Printf("Invalid SERVER_PORT %q, falling back to automatic port selection", portStr)
+		}
 	}
+
+	var listener net.Listener
+	var err error
+
+	if port > 0 {
+		addr := fmt.Sprintf("127.0.0.1:%d", port)
+		listener, err = net.Listen("tcp", addr)
+		if err != nil {
+			log.Fatalf("Failed to bind to port %d: %v", port, err)
+		}
+		fmt.Printf("Server is listening on %s\n", addr)
+		fmt.Printf("VERSION: %q\n", Version)
+	} else {
+		// Let OS pick free port
+		listener, err = net.Listen("tcp", "127.0.0.1:0")
+		if err != nil {
+			log.Fatalf("Failed to listen on a free port: %v", err)
+		}
+		addr := listener.Addr().(*net.TCPAddr)
+		fmt.Printf("Server is listening on 127.0.0.1:%d\n", addr.Port)
+	}
+	defer listener.Close()
+
+	handler := c.Handler(mux)
+	handler = loggingMiddleware(handler)
+
+	if err := http.Serve(listener, handler); err != nil {
+		log.Fatalf("Server error: %v", err)
+	}
+}
+
+// Simple logging middleware
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+		next.ServeHTTP(w, r)
+	})
 }
