@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -67,9 +66,10 @@ func initViper() {
 	viper.AddConfigPath("/etc/flox/")
 	viper.AddConfigPath("$HOME/.config/flox/")
 	viper.AddConfigPath(".")
-	viper.SetEnvPrefix("FLOX")
 
+	viper.SetEnvPrefix("flox")
 	viper.AutomaticEnv()
+	viper.BindEnv("server.port", "FLOX_SERVER_PORT") // should be automatic, but alas, we had to bind it manually
 
 	// Read the configuration file
 	if err := viper.ReadInConfig(); err != nil {
@@ -84,23 +84,18 @@ func initViper() {
 		log.Printf("Using config file: %s", viper.ConfigFileUsed())
 	}
 
-	// --- Set default values ---
-	// These are used if neither the config file nor env vars provide a value
-	// Note: The key names must match the structure in your YAML and how Viper sees them.
-	// For nested keys like `sites.base_dir` in YAML, use dot notation.
 	viper.SetDefault("sites.base_dir", "./sites") // Default for development
 	viper.SetDefault("server.port", 0)            // Default to 0 (auto-select) if not specified
 
-	// --- Bind command-line flags ---
 	// Define flags
-	flag.String("sites-dir", "", "Base directory to store site configs")
+	pflag.String("sites-dir", "", "Base directory to store site configs")
 	// Bind the flag to a Viper key. The flag name becomes the key if not specified otherwise.
 	// This makes the flag value available via viper.GetString("sites-dir")
 	// and gives it the highest precedence (after explicit viper.Set calls).
 	viper.BindPFlag("sites.dir_flag", pflag.CommandLine.Lookup("sites-dir")) // Use a distinct key
 
 	// Parse command-line flags
-	flag.Parse()
+	pflag.Parse()
 
 	// --- Determine final values using Viper ---
 	// Priority order (highest to lowest):
@@ -130,27 +125,17 @@ func initViper() {
 		sitesBaseDir = filepath.Join(cwd, "sites")
 	}
 
-	// Get server port
-	// Check flag first (highest priority for this specific setting)
-	// Note: We need to handle the flag specially because it overrides the config/env *and* has a default (0)
-	// Viper's normal precedence might not work perfectly here because the flag default is 0,
-	// which is a valid value, but also the "use default/auto" value in our logic.
-	// Let's handle it explicitly:
-	// flagPortStr := pflag.Lookup("port") // Define a port flag if you want
-	// Or, if you don't have a dedicated -port flag, rely on SERVER_PORT env var and config file.
-	// Let's assume you rely on SERVER_PORT env var and config for port for now,
-	// and keep the flag parsing for sites-dir only in initViper for simplicity.
-	// You can add a -port flag later if needed using viper.BindPFlag("server.port", ...)
-
-	// Get port from Viper (env var SERVER_PORT or config file server.port)
+	// Get port from Viper (env var FLOX_SERVER_PORT or config file server.port)
 	// Viper returns the zero value (0 for int) if not found/set.
 	// We handle 0 as "use default/auto-select" in main().
 	configuredPort := viper.GetInt("server.port")
 	if configuredPort > 0 && configuredPort <= 65535 {
 		port = configuredPort
+		log.Printf("DEBUG: initViper set global 'port' variable to: %d", port)
 	} else if configuredPort == 0 {
 		// Zero is treated as "use default/auto-select"
 		port = 0
+		log.Printf("DEBUG: initViper set global 'port' variable to: %d (auto-select)", port)
 	} else {
 		log.Printf("Warning: Invalid server.port %d from config/env, falling back to automatic port selection", configuredPort)
 		port = 0 // Default to auto-select

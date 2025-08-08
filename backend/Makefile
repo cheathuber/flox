@@ -32,6 +32,7 @@ clean:
 	@echo "Cleaning up..."
 	rm -f $(BINARY_NAME)
 	rm -rf $(BUILD_DIR)
+	@$(MAKE) clean-test-binary > /dev/null 2>&1 || true
 	@echo "Clean completed."
 
 package-prepare: build
@@ -84,4 +85,33 @@ install-local: package
 uninstall:
 	sudo dpkg --purge flox-backend
 
-.PHONY: all build clean package-prepare package upload run install-local uninstall
+test: build-test-binary
+	@echo "Running local API test..."
+	./run-local-test.sh
+	@echo "Local API test complete."
+
+.PHONY: build-test-binary
+build-test-binary: clean-test-binary
+	@echo "Building test binary..."
+	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=$(CGO_ENABLED) \
+	go build -o flox-backend-test
+	@echo "Test binary built: flox-backend-test"
+
+.PHONY: clean-test-binary
+clean-test-binary:
+	@echo "Cleaning test binary and logs..."
+	@rm -f flox-backend-test
+	@rm -f flox-backend-test.log
+	@rm -f flox-backend-test.pid
+	@echo "Test cleanup completed."
+
+.PHONY: run-dev
+run-dev: build-test-binary
+	@echo "Running the test binary for development..."
+    # Set common dev environment variables
+    SITE_IP=127.0.0.1 \
+	SITES_BASE_DIR=./dev-sites \
+	SERVER_PORT=8099 \
+	./flox-backend-test
+
+.PHONY: all build clean package-prepare package upload run install-local uninstall test
