@@ -5,7 +5,7 @@ After=network.target mysql.service
 [Service]
 User=floxsvc
 Group=floxapp
-WorkingDirectory=/var/vhosts/flox
+WorkingDirectory=/var/www/flox
 Environment=CONFIG_PATH=/etc/flox/backend.conf
 ExecStart=/usr/local/bin/flox-backend
 Restart=on-failure
@@ -18,7 +18,7 @@ NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/var/vhosts/flox /var/log/flox
+ReadWritePaths=/var/www/flox /var/log/flox
 
 [Install]
 WantedBy=multi-user.target

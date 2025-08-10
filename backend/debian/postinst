@@ -12,9 +12,9 @@ if ! id floxsvc >/dev/null 2>&1; then
 fi
 
 # Create directories
-mkdir -p /var/vhosts/flox/{config/environment,generated,logs}
-chown -R floxsvc:floxapp /var/vhosts/flox
-chmod 2775 /var/vhosts/flox  # SGID for group inheritance
+mkdir -p /var/www/flox/{config/environment,generated,logs}
+chown -R floxsvc:floxapp /var/www/flox
+chmod 2775 /var/www/flox  # SGID for group inheritance
 
 mkdir -p /etc/flox
 chown root:floxapp /etc/flox
@@ -23,12 +23,11 @@ chmod 0775 /etc/flox
 # Set up sudoers
 cat > /etc/sudoers.d/flox-backend <<EOF
 # Allow floxsvc to run necessary commands
-floxsvc ALL=(root) NOPASSWD: /usr/bin/mysql
 floxsvc ALL=(root) NOPASSWD: /bin/systemctl reload nginx
 floxsvc ALL=(root) NOPASSWD: /bin/ln -s /etc/nginx/sites-available/* /etc/nginx/sites-enabled/
 floxsvc ALL=(root) NOPASSWD: /bin/rm /etc/nginx/sites-enabled/*
 floxsvc ALL=(root) NOPASSWD: /usr/sbin/nginx -t
-floxsvc ALL=(floxapp) NOPASSWD: /var/vhosts/flox/restart.sh
+floxsvc ALL=(floxapp) NOPASSWD: /var/www/flox/restart.sh
 EOF
 chmod 0440 /etc/sudoers.d/flox-backend
 
@@ -36,7 +35,7 @@ chmod 0440 /etc/sudoers.d/flox-backend
 if [ ! -f /etc/flox/backend.yaml ]; then
     # Ensure the target directory for templates/scripts exists in the example
     # Adjust paths as needed for your actual deployment structure
-    mkdir -p /var/vhosts/flox/environment/templates
+    mkdir -p /var/www/flox/environment/templates
     mkdir -p /usr/lib/flox/scripts
 
     cat > /etc/flox/backend.yaml <<EOF
@@ -64,7 +63,7 @@ database:
 # Paths to templates and scripts used by the backend
 # These paths reflect where the Debian package installs files
 paths:
-    template_dir: "/var/vhosts/flox/environment/templates"
+    template_dir: "/var/www/flox/environment/templates"
     script_dir: "/usr/lib/flox/scripts"
 EOF
     chown root:floxapp /etc/flox/backend.yaml
