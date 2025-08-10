@@ -1,7 +1,7 @@
 # flox
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/cheathuber/flox)](https://goreportcard.com/report/github.com/cheathuber/flox)
-[![Build Status](https://github.com/cheathuber/flox/actions/workflows/go.yml/badge.svg)](https://github.com/cheathuber/flox/actions)
+[![Build Status](https://github.com/cheathuber/flox/actions/workflows/build-deb.yml/badge.svg)](https://github.com/cheathuber/flox/actions/workflows/build-deb.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/cheathuber/flox)](https://github.com/cheathuber/flox/issues)
 [![GitHub stars](https://img.shields.io/github/stars/cheathuber/flox)](https://github.com/cheathuber/flox/stargazers)
