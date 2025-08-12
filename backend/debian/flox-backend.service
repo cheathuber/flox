@@ -3,8 +3,8 @@ Description=Flox Site Creation Backend
 After=network.target mysql.service
 
 [Service]
-User=floxsvc
-Group=floxapp
+User=flox
+Group=flox
 WorkingDirectory=/var/www/flox
 Environment=CONFIG_PATH=/etc/flox/backend.conf
 ExecStart=/usr/local/bin/flox-backend

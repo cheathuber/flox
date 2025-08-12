@@ -2,32 +2,32 @@
 set -e
 
 # Create system users and groups
-if ! getent group floxapp >/dev/null; then
-    addgroup --system floxapp
+if ! getent group flox >/dev/null; then
+    addgroup --system flox
 fi
 
-if ! id floxsvc >/dev/null 2>&1; then
-    adduser --system --ingroup floxapp --no-create-home \
-            --disabled-password --shell /bin/false floxsvc
+if ! id flox >/dev/null 2>&1; then
+    adduser --system --ingroup flox --no-create-home \
+            --disabled-password --shell /bin/false flox
 fi
 
 # Create directories
 mkdir -p /var/www/flox/{config/environment,generated,logs}
-chown -R floxsvc:floxapp /var/www/flox
+chown -R flox:flox /var/www/flox
 chmod 2775 /var/www/flox  # SGID for group inheritance
 
 mkdir -p /etc/flox
-chown root:floxapp /etc/flox
+chown root:flox /etc/flox
 chmod 0775 /etc/flox
 
 # Set up sudoers
 cat > /etc/sudoers.d/flox-backend <<EOF
-# Allow floxsvc to run necessary commands
-floxsvc ALL=(root) NOPASSWD: /bin/systemctl reload nginx
-floxsvc ALL=(root) NOPASSWD: /bin/ln -s /etc/nginx/sites-available/* /etc/nginx/sites-enabled/
-floxsvc ALL=(root) NOPASSWD: /bin/rm /etc/nginx/sites-enabled/*
-floxsvc ALL=(root) NOPASSWD: /usr/sbin/nginx -t
-floxsvc ALL=(floxapp) NOPASSWD: /var/www/flox/restart.sh
+# Allow flox to run necessary commands
+flox ALL=(root) NOPASSWD: /bin/systemctl reload nginx
+flox ALL=(root) NOPASSWD: /bin/ln -s /etc/nginx/sites-available/* /etc/nginx/sites-enabled/
+flox ALL=(root) NOPASSWD: /bin/rm /etc/nginx/sites-enabled/*
+flox ALL=(root) NOPASSWD: /usr/sbin/nginx -t
+flox ALL=(flox) NOPASSWD: /var/www/flox/restart.sh
 EOF
 chmod 0440 /etc/sudoers.d/flox-backend
 
@@ -66,7 +66,7 @@ paths:
     template_dir: "/var/www/flox/environment/templates"
     script_dir: "/usr/lib/flox/scripts"
 EOF
-    chown root:floxapp /etc/flox/backend.yaml
+    chown root:flox /etc/flox/backend.yaml
     chmod 0640 /etc/flox/backend.yaml
 fi
 
@@ -77,7 +77,7 @@ if [ ! -f /etc/flox/mysql-admin.cnf ]; then
 user=floxadmin
 password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)
 EOF
-    chown root:floxapp /etc/flox/mysql-admin.cnf
+    chown root:flox /etc/flox/mysql-admin.cnf
     chmod 0640 /etc/flox/mysql-admin.cnf
 fi
 
